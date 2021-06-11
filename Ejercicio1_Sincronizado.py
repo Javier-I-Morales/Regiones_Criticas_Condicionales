@@ -1,4 +1,4 @@
-
+import threading
 import logging
 import random
 import time
@@ -11,43 +11,30 @@ class Este_Recurso(Recurso):
         dato1 = 0
         numLectores = 0
 
+
 Mi_Recurso = Este_Recurso()
 
-def condicion_Lector():
-    return True
 
 def condicion_Escritor():
     return Mi_Recurso.numLectores == 0
 
 
-Region_Lectores = Region(Mi_Recurso,threading.Lock())
-
-Region_Condicional_Lectores = RegionCondicional(Mi_Recurso, condicion_Lector)
+Region_Lectores = Region(Mi_Recurso)
 
 Region_Condicional_Escritores = RegionCondicional(Mi_Recurso, condicion_Escritor)
 
 
 @Region_Lectores.region
-def seccionCriticaLectorAntes():
+def seccionCriticaLector():
     Mi_Recurso.numLectores += 1
     time.sleep(1)
-
-
-@Region_Lectores.region
-def seccionCriticaLectorDespues():
     Mi_Recurso.numLectores -= 1
-
-
-@Region_Condicional_Lectores.condicion
-def seccionCriticaLectorCondicional():
-    logging.info(f'Lector lee dato1 = {Mi_Recurso.dato1}')
 
 
 def Lector():
     while True:
-        seccionCriticaLectorAntes()
-        seccionCriticaLectorCondicional()
-        seccionCriticaLectorDespues()
+        seccionCriticaLector()
+        logging.info(f'Lector lee dato1 = {Mi_Recurso.dato1}')
         time.sleep(random.randint(3,6))
 
 
